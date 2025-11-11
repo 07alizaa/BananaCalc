@@ -13,5 +13,6 @@ router.post('/login', userController.login)
 // Puzzle and submit endpoints (mounted at root so frontend can call /api/puzzle)
 router.get('/api/puzzle', userController.getPuzzle)
 router.post('/api/submit', auth, userController.submit)
+router.get('/api/leaderboard', userController.getLeaderboard)
 
 module.exports = router
