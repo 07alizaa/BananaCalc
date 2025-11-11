@@ -16,7 +16,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
-  const from = location?.state?.from || '/'
+  const from = location?.state?.from || '/dashboard' // Changed default to '/dashboard'
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -26,19 +26,24 @@ export default function Login() {
     setLoading(true)
     try {
       const res = await login({ username, password })
+      
       if (!res || res.success === false) {
-        setError(res.error || 'Login failed')
+        setError(res?.error || res?.message || 'Login failed')
         return
       }
 
-      // Save session info: username (persist), token (session-scoped)
+      // Login succeeded - store token and username
       if (res.token) {
         sessionStorage.setItem('token', res.token)
+        localStorage.setItem('username', username)
+        navigate(from, { replace: true })
+        return
       }
-      localStorage.setItem('username', username)
-      // Redirect back to where the user came from (e.g., /game) or to home
-      navigate(from)
+
+      // If no token returned, show error
+      setError('Login succeeded but no token returned')
     } catch (err) {
+      console.error('Login error:', err)
       setError(String(err))
     } finally {
       setLoading(false)

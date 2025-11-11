@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
-import { signup, login } from '../services/api'
+import { signup } from '../services/api'
 
 /**
  * Signup page
@@ -20,7 +20,7 @@ export default function Signup() {
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
-  const from = location?.state?.from || '/'
+  const from = location?.state?.from || '/dashboard' // Changed default to '/dashboard'
 
   function validate() {
     if (!username || username.length < 3) return 'Username must be at least 3 characters.'
@@ -39,32 +39,24 @@ export default function Signup() {
     setLoading(true)
     try {
       const res = await signup({ username, email, password })
+      
       if (!res || res.success === false) {
-        setError(res.error || 'Signup failed')
+        setError(res?.error || res?.message || 'Signup failed')
         return
       }
 
-      // Optionally auto-login after signup if backend returned a token
+      // Signup succeeded - store token and username
       if (res.token) {
         sessionStorage.setItem('token', res.token)
         localStorage.setItem('username', username)
-        // Return to original destination if any
-        navigate(from)
+        navigate(from, { replace: true })
         return
       }
 
-      // If backend didn't return token, try logging in to obtain a token
-      const loginRes = await login({ username, password })
-      if (loginRes && loginRes.token) {
-        sessionStorage.setItem('token', loginRes.token)
-        localStorage.setItem('username', username)
-        // Return to original destination if any
-        navigate(from)
-        return
-      }
-
-      setError('Signup succeeded, but automatic login failed. Please log in manually.')
+      // If no token returned, show error
+      setError('Signup succeeded but no token returned')
     } catch (err) {
+      console.error('Signup error:', err)
       setError(String(err))
     } finally {
       setLoading(false)
