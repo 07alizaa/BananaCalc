@@ -1,35 +1,75 @@
-import React, { useState } from 'react'
+import React from 'react'
 
 /**
- * QuestionCard
- * - Displays a question and multiple-choice answers.
- * - Calls `onAnswer(questionId, selected)` when an answer is chosen.
+ * QuestionCard relies on parent state so we can show inline answer feedback.
  */
-export default function QuestionCard({ question, onAnswer }) {
-  const [selected, setSelected] = useState(null)
-
-  function handleSelect(choice) {
-    setSelected(choice.id)
-    if (onAnswer) onAnswer(question.id, choice)
-  }
+export default function QuestionCard({
+  question,
+  onSelect,
+  selectedId,
+  showCorrect = false,
+  disabled = false,
+  feedback,
+  isCorrectSelection,
+}) {
+  const problem = question.problem || question.text || ''
+  const isImage = typeof problem === 'string' && /^(https?:)?\/\//.test(problem)
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <div className="mb-4">
-        <h2 className="text-xl font-bold text-primary">{question.text}</h2>
-      </div>
+    <div className="rounded-3xl border-4 border-primary bg-accent/60 shadow-lg">
+      <div className="p-6 sm:p-8 flex flex-col gap-5">
+        <div className="flex flex-col items-center gap-3 text-primary">
+          {isImage ? (
+            <>
+              <h2 className="text-2xl font-bold text-center">What number is hidden by the banana?</h2>
+              <img
+                src={problem}
+                alt="Banana puzzle"
+                className="max-h-72 w-auto rounded-xl shadow-md"
+              />
+            </>
+          ) : (
+            <h2 className="text-2xl font-bold text-center">{problem || 'Solve the puzzle'}</h2>
+          )}
+        </div>
 
-      <div className="grid gap-3">
-        {question.choices.map((choice) => (
-          <button
-            key={choice.id}
-            onClick={() => handleSelect(choice)}
-            className={`text-left px-4 py-3 rounded-md border transition-colors w-full
-              ${selected === choice.id ? 'bg-primary text-white border-primary' : 'bg-gray-50 hover:bg-gray-100 border-transparent'}`}
+        <div className="grid gap-3">
+          {question.choices.map((choice) => {
+            const isSelected = selectedId === choice.id
+            const correctChoice = choice.isCorrect
+
+            let stateClasses = 'bg-white border-primary/30 text-primary hover:bg-primary hover:text-white hover:border-primary'
+            if (showCorrect) {
+              if (correctChoice) stateClasses = 'bg-darkGreen text-white border-darkGreen'
+              else if (isSelected) stateClasses = 'bg-primary text-white border-primary'
+              else stateClasses = 'bg-secondary/30 text-primary/70 border-secondary/30'
+            } else if (isSelected) {
+              stateClasses = 'bg-primary text-white border-primary shadow-sm'
+            }
+
+            return (
+              <button
+                key={choice.id}
+                type="button"
+                onClick={() => !disabled && onSelect && onSelect(choice)}
+                disabled={disabled}
+                className={`text-left px-4 py-3 rounded-xl border transition-colors duration-150 w-full font-semibold ${stateClasses}`}
+              >
+                {choice.text}
+              </button>
+            )
+          })}
+        </div>
+
+        {feedback && (
+          <div
+            className={`text-center text-lg font-semibold ${
+              isCorrectSelection ? 'text-darkGreen' : 'text-primary'
+            }`}
           >
-            {choice.text}
-          </button>
-        ))}
+            {feedback}
+          </div>
+        )}
       </div>
     </div>
   )

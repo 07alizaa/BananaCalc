@@ -64,42 +64,45 @@ export default function Signup() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-b from-accent to-secondary/10">
-  <div className="w-full max-w-md bg-white p-8 rounded-lg shadow border-2 border-primary/25">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-2xl">🍌</div>
-          <h2 className="text-2xl font-bold text-primary">Create your account</h2>
+    <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-b from-accent/40 to-secondary/10">
+      <div className="w-full max-w-lg rounded-3xl border-4 border-primary bg-accent/70 shadow-xl p-10">
+        <div className="flex items-center gap-3 mb-6 text-primary">
+          <div className="w-14 h-14 bg-white border-2 border-primary rounded-full flex items-center justify-center text-3xl">🍌</div>
+          <div>
+            <h2 className="text-3xl font-bold leading-tight">Create your BananaCalc account</h2>
+            <p className="text-sm text-primary/80">Unlock puzzles, track scores, and join the leaderboard.</p>
+          </div>
         </div>
         {from && from !== '/' && (
           <div className="mb-3 text-sm text-gray-600">You were redirected here. After signup you will be returned to the game.</div>
         )}
         {error && <div className="mb-4 text-sm text-red-600">{error}</div>}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm text-gray-600">Username</label>
-            <input value={username} onChange={(e) => setUsername(e.target.value)} className="w-full mt-1 p-2 border rounded" />
+            <label className="block text-sm text-primary font-semibold">Username</label>
+            <input value={username} onChange={(e) => setUsername(e.target.value)} className="w-full mt-1 p-3 border-2 border-primary/40 rounded-xl focus:border-primary focus:outline-none bg-white" />
           </div>
 
           <div>
-            <label className="block text-sm text-gray-600">Email</label>
-            <input value={email} onChange={(e) => setEmail(e.target.value)} className="w-full mt-1 p-2 border rounded" />
+            <label className="block text-sm text-primary font-semibold">Email</label>
+            <input value={email} onChange={(e) => setEmail(e.target.value)} className="w-full mt-1 p-3 border-2 border-primary/40 rounded-xl focus:border-primary focus:outline-none bg-white" />
           </div>
 
           <div>
-            <label className="block text-sm text-gray-600">Password</label>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full mt-1 p-2 border rounded" />
-            <div className="text-xs text-gray-500 mt-1">At least 8 characters and one number.</div>
+            <label className="block text-sm text-primary font-semibold">Password</label>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full mt-1 p-3 border-2 border-primary/40 rounded-xl focus:border-primary focus:outline-none bg-white" />
+            <div className="text-xs text-primary/80 mt-1">At least 8 characters and one number.</div>
           </div>
 
           <div className="flex justify-end">
-            <button type="submit" disabled={loading} className="px-4 py-2 bg-primary text-white rounded">
+            <button type="submit" disabled={loading} className="px-5 py-3 bg-primary text-white rounded-xl shadow-lg hover:-translate-y-0.5 transition disabled:opacity-60">
               {loading ? 'Creating…' : 'Create account'}
             </button>
           </div>
         </form>
 
-        <div className="mt-4 text-sm text-center text-gray-600">
-          Already have an account? <Link to="/login" className="text-primary underline">Sign in</Link>
+        <div className="mt-6 text-sm text-center text-primary/80">
+          Already have an account? <Link to="/login" className="text-primary underline font-semibold">Sign in</Link>
         </div>
       </div>
     </div>

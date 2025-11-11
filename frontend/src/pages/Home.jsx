@@ -24,24 +24,28 @@ export default function Home() {
   }
 
   return (
-  <div className="min-h-screen bg-gradient-to-b from-accent/40 to-secondary/10 p-6">
+    <div className="min-h-screen bg-gradient-to-b from-accent/40 to-secondary/10 p-6">
       {/* Header */}
-      <header className="max-w-6xl mx-auto flex items-center justify-between py-4">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-2xl">🍌</div>
-          <h1 className="text-3xl font-extrabold text-primary">BananaCalc</h1>
-          <span className="ml-3 text-sm text-gray-600">Fun math puzzles</span>
-        </div>
+      <header className="max-w-6xl mx-auto py-4">
+        <div className="rounded-3xl border-4 border-primary bg-accent/80 shadow flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-6 py-4">
+          <div className="flex items-center gap-3 text-primary">
+            <div className="w-14 h-14 bg-white border-2 border-primary rounded-full flex items-center justify-center text-3xl">🍌</div>
+            <div>
+              <h1 className="text-3xl font-extrabold leading-tight">BananaCalc</h1>
+              <p className="text-sm text-primary/80">Fun math puzzles for every adventurer.</p>
+            </div>
+          </div>
 
-        <nav className="flex items-center gap-3">
-          <Link to="/login" className="px-3 py-2 text-sm rounded-md bg-white/80 border border-primary text-primary hover:shadow">Log in</Link>
-          <Link to="/signup" className="px-3 py-2 text-sm rounded-md bg-primary text-white hover:opacity-95">Sign up</Link>
-        </nav>
+          <nav className="flex items-center gap-3">
+            <Link to="/login" className="px-4 py-2 text-sm rounded-xl bg-white text-primary border-2 border-primary hover:bg-primary hover:text-white transition-colors">Log in</Link>
+            <Link to="/signup" className="px-4 py-2 text-sm rounded-xl bg-primary text-white border-2 border-primary hover:opacity-95 transition-colors">Sign up</Link>
+          </nav>
+        </div>
       </header>
 
       {/* Hero */}
       <main className="max-w-4xl mx-auto mt-8">
-  <section className="bg-white rounded-xl shadow p-8 border-2 border-primary/25">
+        <section className="rounded-3xl border-4 border-primary bg-accent/70 shadow-lg p-8">
           <h2 className="text-3xl font-extrabold text-primary mb-3">Sharpen your math skills — one puzzle at a time</h2>
           <p className="text-gray-600 mb-6">Choose a difficulty level and challenge yourself with bite-sized puzzles. Track your score and climb the leaderboard.</p>
 
@@ -50,13 +54,13 @@ export default function Home() {
           </div>
 
           <div className="flex gap-4">
-            <button onClick={startGame} className="px-5 py-3 bg-primary text-white rounded-md shadow-lg transform hover:-translate-y-0.5 transition">Start Game</button>
-            <Link to="/signup" className="px-4 py-3 text-sm text-primary underline rounded-md">Create account</Link>
+            <button onClick={startGame} className="px-5 py-3 bg-primary text-white rounded-xl shadow-lg transform hover:-translate-y-0.5 transition">Start Game</button>
+            <Link to="/signup" className="px-4 py-3 text-sm text-primary underline rounded-xl border-2 border-primary/40 bg-white/70 hover:bg-white transition-colors">Create account</Link>
           </div>
 
           <div className="mt-8">
             <h3 className="text-lg font-semibold mb-2">Why BananaCalc?</h3>
-            <ul className="list-disc list-inside text-gray-600">
+            <ul className="list-disc list-inside text-primary/80">
               <li>Short, focused puzzles that build arithmetic fluency</li>
               <li>Adaptive difficulty and live scoring</li>
               <li>Privacy-conscious sessions — tokens stored in sessionStorage</li>
