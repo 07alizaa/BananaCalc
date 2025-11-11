@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import DifficultySelector from '../components/DifficultySelector'
+import { fetchLeaderboard } from '../services/api'
 
 /**
  * Dashboard - User's home page after login
@@ -8,8 +9,37 @@ import DifficultySelector from '../components/DifficultySelector'
  */
 export default function Dashboard() {
   const [difficulty, setDifficulty] = useState('easy')
+  const [leaderboard, setLeaderboard] = useState([])
+  const [boardError, setBoardError] = useState(null)
+  const [boardLoading, setBoardLoading] = useState(true)
   const navigate = useNavigate()
   const username = localStorage.getItem('username') || 'Player'
+
+  useEffect(() => {
+    let cancelled = false
+    setBoardLoading(true)
+    fetchLeaderboard(10).then((res) => {
+      if (cancelled) return
+      if (res?.success && Array.isArray(res.leaderboard)) {
+        setLeaderboard(res.leaderboard)
+        setBoardError(null)
+      } else {
+        setLeaderboard([])
+        setBoardError(res?.message || res?.error || 'Unable to load leaderboard')
+      }
+    }).catch((err) => {
+      if (!cancelled) {
+        setBoardError(err?.message || 'Unable to load leaderboard')
+        setLeaderboard([])
+      }
+    }).finally(() => {
+      if (!cancelled) setBoardLoading(false)
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   function handleLogout() {
     sessionStorage.removeItem('token')
@@ -53,7 +83,7 @@ export default function Dashboard() {
       </header>
 
       {/* Main content */}
-      <main className="max-w-4xl mx-auto mt-12">
+      <main className="max-w-4xl mx-auto mt-12 grid gap-8">
         <section className="rounded-3xl border-4 border-primary bg-accent/70 shadow-lg p-8">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-16 h-16 bg-white/60 border-2 border-primary rounded-full flex items-center justify-center text-3xl">👋</div>
@@ -84,6 +114,46 @@ export default function Dashboard() {
               <li>Answer math puzzles and earn points</li>
               <li>Your score is saved automatically</li>
             </ul>
+          </div>
+        </section>
+
+        <section className="rounded-3xl border-4 border-primary bg-accent/70 shadow-lg p-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h3 className="text-2xl font-bold text-primary">Leaderboard</h3>
+              <p className="text-primary/80 text-sm">Top puzzlers across BananaCalc</p>
+            </div>
+            <span className="text-primary/80 text-sm">Updated on load</span>
+          </div>
+
+          <div className="mt-6">
+            {boardLoading ? (
+              <div className="text-primary/80">Loading leaderboard…</div>
+            ) : boardError ? (
+              <div className="text-primary">{boardError}</div>
+            ) : leaderboard.length === 0 ? (
+              <div className="text-primary/80">No scores yet. Play a round to claim the top spot!</div>
+            ) : (
+              <ol className="space-y-3">
+                {leaderboard.map((entry) => {
+                  const highlight = entry.username === username
+                  return (
+                    <li
+                      key={`${entry.username}-${entry.rank}`}
+                      className={`flex items-center justify-between rounded-2xl border-2 border-primary/20 bg-white px-5 py-3 shadow-sm text-primary ${
+                        highlight ? 'ring-2 ring-primary' : ''
+                      }`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <span className="text-lg font-bold text-primary/90">#{entry.rank}</span>
+                        <span className="font-semibold">{entry.username}</span>
+                      </div>
+                      <span className="text-darkGreen font-bold">{entry.score}</span>
+                    </li>
+                  )
+                })}
+              </ol>
+            )}
           </div>
         </section>
       </main>

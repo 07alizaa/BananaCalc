@@ -64,6 +64,17 @@ export async function submitAnswer(questionId, selectedChoice, username) {
   }
 }
 
+export async function fetchLeaderboard(limit = 10) {
+  try {
+    const res = await fetch(`${API_BASE}/api/leaderboard?limit=${encodeURIComponent(limit)}`)
+    if (!res.ok) throw new Error('Failed to load leaderboard')
+    return await res.json()
+  } catch (err) {
+    console.warn('fetchLeaderboard failed', err)
+    return { success: false, leaderboard: [], error: err.message }
+  }
+}
+
 // Register a new user. Returns { success, token?, user? }
 export async function signup({ username, email, password }) {
   try {
