@@ -58,16 +58,19 @@ exports.login = async (req, res) => {
       return res
         .status(400)
         .json({ success: false, message: "username and password required" });
+
     const user = await findByUsername(username);
     if (!user)
       return res
         .status(401)
         .json({ success: false, message: "Invalid credentials" });
+
     const ok = await bcrypt.compare(password, user.password);
     if (!ok)
       return res
         .status(401)
         .json({ success: false, message: "Invalid credentials" });
+
     const token = jwt.sign(
       { username: user.username, id: user.id },
       process.env.JWT_SECRET || "replace_this_secret",
@@ -84,7 +87,7 @@ exports.login = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error(err);
+    console.error('Login error:', err);
     return res.status(500).json({ success: false, message: "login error" });
   }
 };
@@ -103,7 +106,7 @@ exports.getPuzzle = async (req, res) => {
     // Strip any server-only fields (do not expose correct answers)
     const questions = external.map((q) => ({
       id: q.id,
-      text: q.text,
+      problem: q.problem, // Image URL or text problem
       choices: q.choices,
     }));
     return res.json({ success: true, difficulty, questions });
