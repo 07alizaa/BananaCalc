@@ -12,6 +12,56 @@ const {
 } = require("../models/userModel");
 const { fetchPuzzles } = require("../services/bananaService");
 
+// Cache recently served puzzles so answer validation does not rely on re-fetching the Banana API.
+const questionCache = new Map();
+const QUESTION_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+function extractCorrectChoiceId(question) {
+  if (!question) return null;
+  if (Array.isArray(question.choices)) {
+    const marked = question.choices.find((choice) => choice && choice.isCorrect);
+    if (marked && marked.id !== undefined) return String(marked.id);
+    if (question.answer !== undefined && question.answer !== null) {
+      const answerString = String(question.answer);
+      const matchByValue = question.choices.find((choice) => {
+        if (!choice) return false;
+        if (choice.id !== undefined && String(choice.id) === answerString) return true;
+        if (choice.value !== undefined && String(choice.value) === answerString) return true;
+        if (choice.text !== undefined && String(choice.text) === answerString) return true;
+        return false;
+      });
+      if (matchByValue && matchByValue.id !== undefined) return String(matchByValue.id);
+    }
+  }
+  if (question.correct_choice_id !== undefined && question.correct_choice_id !== null) {
+    return String(question.correct_choice_id);
+  }
+  if (question.answer !== undefined && question.answer !== null) {
+    return String(question.answer);
+  }
+  return null;
+}
+
+function rememberQuestion(question) {
+  if (!question || !question.id) return;
+  const correctId = extractCorrectChoiceId(question);
+  if (!correctId) return;
+  questionCache.set(question.id, {
+    correctChoiceId: correctId,
+    storedAt: Date.now(),
+  });
+}
+
+function resolveCachedQuestion(questionId) {
+  const entry = questionCache.get(questionId);
+  if (!entry) return null;
+  if (Date.now() - entry.storedAt > QUESTION_TTL_MS) {
+    questionCache.delete(questionId);
+    return null;
+  }
+  return entry;
+}
+
 // Use the external Banana API (via services/bananaService) for puzzles.
 // We no longer keep an internal question bank here so the external API is authoritative.
 
@@ -104,6 +154,7 @@ exports.getPuzzle = async (req, res) => {
         .status(502)
         .json({ success: false, message: "Banana API returned no puzzles" });
     }
+    external.forEach(rememberQuestion);
     // Strip any server-only fields (do not expose correct answers)
     const questions = external.map((q) => ({
       id: q.id,
@@ -139,42 +190,35 @@ exports.submit = async (req, res) => {
           success: false,
           message: "questionId, selectedChoice and username required",
         });
-    // Try to find the question from the Banana API across difficulties
-    const difficulties = ["easy", "medium", "hard"];
-    let found = null;
-    for (const d of difficulties) {
-      const pool = await fetchPuzzles(d);
-      if (pool && pool.length) {
+    let correctId = null;
+    const cached = resolveCachedQuestion(questionId);
+
+    if (cached && cached.correctChoiceId) {
+      correctId = cached.correctChoiceId;
+    } else {
+      // Fallback: attempt to locate the puzzle again from Banana API.
+      const difficulties = ["easy", "medium", "hard"];
+      for (const d of difficulties) {
+        const pool = await fetchPuzzles(d);
+        if (!pool || !pool.length) continue;
         const q = pool.find((x) => x.id === questionId);
         if (q) {
-          found = q;
-          break;
+          rememberQuestion(q);
+          correctId = extractCorrectChoiceId(q);
+          if (correctId) break;
         }
       }
-    }
-    if (!found)
-      return res
-        .status(404)
-        .json({ success: false, message: "Question not found" });
-
-    // Determine correct answer server-side. Banana API may provide `answer` or mark choices with `isCorrect`.
-    let correctId = null;
-    if (found.answer) correctId = found.answer;
-    else if (Array.isArray(found.choices)) {
-      const marked = found.choices.find((c) => c.isCorrect === true);
-      if (marked) correctId = marked.id;
-    }
-    if (!correctId) {
-      // Can't determine correctness from Banana API payload.
-      return res
-        .status(422)
-        .json({
-          success: false,
-          message: "Cannot verify answer for this question",
-        });
+      if (!correctId) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Question not found" });
+      }
     }
 
-    const correct = correctId === selectedChoice;
+    const correct = String(correctId) === String(selectedChoice);
+    if (correct && cached) {
+      questionCache.delete(questionId);
+    }
     const scoreDelta = correct ? 10 : 0;
     const newScore = await updateScore(username, scoreDelta);
     return res.json({ success: true, correct, scoreDelta, newScore });
