@@ -1,24 +1,22 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
+// index.js
+// Backend entrypoint for BananaCalc. Import and start the Express app.
 
-const app = express();
+const app = require('./app')
+const { pool } = require('./utils/db')
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+const PORT = process.env.PORT || 4000
 
-// Simple health check
-app.get('/ping', (req, res) => {
-  res.json({ ok: true, time: Date.now() });
-});
+// Test DB connection on startup
+pool.query('SELECT 1 as ok')
+  .then(() => {
+    console.log('✓ Database connection successful')
+  })
+  .catch((err) => {
+    console.error('✗ Database connection failed:', err.message)
+    console.error('Check your .env DB credentials')
+  })
 
-// Example API route
-app.get('/api/hello', (req, res) => {
-  res.json({ message: 'Hello from backend!' });
-});
-
-const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
-  console.log(`Backend server listening on port ${PORT}`);
-});
+  console.log(`✓ BananaCalc backend listening on port ${PORT}`)
+  console.log(`  Health check: http://localhost:${PORT}/health`)
+})
