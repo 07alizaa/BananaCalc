@@ -1,7 +1,7 @@
 // controllers/leaderboardController.js
 // Handle leaderboard-related routes
 
-const { getTopUsers } = require("../models/userModel");
+const { getTopUsers } = require("../models/leaderboardModel");
 
 // GET /api/leaderboard?limit=10
 exports.getLeaderboard = async (req, res) => {

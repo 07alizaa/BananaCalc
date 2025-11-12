@@ -1,7 +1,7 @@
 // controllers/gameController.js
 // Handle game-related routes (puzzle fetching and answer submission)
 
-const { updateScore } = require("../models/userModel");
+const { updateScore } = require("../models/gameModel");
 const { fetchPuzzles } = require("../services/bananaService");
 
 // Cache recently served puzzles so answer validation does not rely on re-fetching the Banana API.

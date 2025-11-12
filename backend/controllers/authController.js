@@ -6,7 +6,7 @@ const jwt = require("jsonwebtoken");
 const {
   findByUsername,
   createUser,
-} = require("../models/userModel");
+} = require("../models/authModel");
 
 // POST /signup
 exports.signup = async (req, res) => {
